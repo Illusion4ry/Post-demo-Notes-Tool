@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { analyzeTranscript } from './services/geminiService';
-import { AnalysisResult } from './types';
+import { analyzeTranscript, generateEmailSequence } from './services/geminiService';
+import { AnalysisResult, EmailDraft } from './types';
 import AnalysisTable from './components/AnalysisTable';
+import EmailSequence from './components/EmailSequence';
 
 const App: React.FC = () => {
   const [transcript, setTranscript] = useState('');
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [emails, setEmails] = useState<EmailDraft[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingEmails, setIsGeneratingEmails] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleAnalyze = async () => {
@@ -18,6 +21,7 @@ const App: React.FC = () => {
     setIsLoading(true);
     setError(null);
     setResult(null);
+    setEmails(null); // Reset emails on new analysis
 
     try {
       const data = await analyzeTranscript(transcript);
@@ -30,9 +34,26 @@ const App: React.FC = () => {
     }
   };
 
+  const handleGenerateEmails = async () => {
+    if (!transcript.trim()) return;
+
+    setIsGeneratingEmails(true);
+    try {
+      const data = await generateEmailSequence(transcript);
+      setEmails(data.emails);
+    } catch (err) {
+      console.error("Failed to generate emails", err);
+      // Optional: show a specific error for emails, or reuse global error
+      alert("Failed to generate emails. Please try again.");
+    } finally {
+      setIsGeneratingEmails(false);
+    }
+  };
+
   const handleClear = () => {
     setTranscript('');
     setResult(null);
+    setEmails(null);
     setError(null);
   };
 
@@ -106,8 +127,33 @@ const App: React.FC = () => {
           {/* Output Section */}
           <div className="min-h-[200px] lg:mt-0">
             {result ? (
-              <div className="animate-fade-in-up">
+              <div className="animate-fade-in-up space-y-6">
                 <AnalysisTable data={result} />
+                
+                {/* Email Generation Prompt */}
+                {!emails && (
+                  <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm text-center space-y-4">
+                    <div className="text-gray-900 font-semibold">Want to follow up?</div>
+                    <p className="text-sm text-gray-500">Generate a 6-touch-point email sequence based on this conversation.</p>
+                    <button
+                      onClick={handleGenerateEmails}
+                      disabled={isGeneratingEmails}
+                      className="w-full py-3 rounded-xl border-2 border-[#0055D4] text-[#0055D4] font-semibold hover:bg-blue-50 transition-colors disabled:opacity-50 flex justify-center items-center gap-2"
+                    >
+                      {isGeneratingEmails ? (
+                         <>
+                         <svg className="animate-spin h-4 w-4 text-[#0055D4]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                         </svg>
+                         <span>Drafting Emails...</span>
+                       </>
+                      ) : (
+                        "Generate Email Sequence"
+                      )}
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="h-full min-h-[500px] flex flex-col items-center justify-center p-12 bg-white/50 rounded-3xl border-2 border-dashed border-gray-200 text-gray-400">
@@ -123,8 +169,15 @@ const App: React.FC = () => {
               </div>
             )}
           </div>
-          
         </div>
+
+        {/* Email Sequence Result Section - Full Width below main grid */}
+        {emails && (
+          <div className="animate-fade-in-up pt-4 pb-20">
+             <EmailSequence emails={emails} />
+          </div>
+        )}
+
       </div>
       
       {/* Footer */}

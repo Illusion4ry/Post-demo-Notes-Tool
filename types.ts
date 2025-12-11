@@ -16,6 +16,17 @@ export interface AnalysisResult {
   howTheyFoundUs: string;
 }
 
+export interface EmailDraft {
+  subject: string;
+  body: string;
+  recommendedDate: string;
+  reasoning: string;
+}
+
+export interface EmailSequenceResult {
+  emails: EmailDraft[];
+}
+
 export interface RowDefinition {
   label: string;
   key: keyof AnalysisResult;
