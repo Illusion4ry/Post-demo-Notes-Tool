@@ -57,9 +57,8 @@ const emailSequenceSchema: Schema = {
           subject: { type: Type.STRING },
           body: { type: Type.STRING },
           recommendedDate: { type: Type.STRING },
-          reasoning: { type: Type.STRING },
         },
-        required: ["subject", "body", "recommendedDate", "reasoning"],
+        required: ["subject", "body", "recommendedDate"],
       },
     },
   },
@@ -120,31 +119,29 @@ export const generateEmailSequence = async (transcript: string, settings: EmailS
   }
 
   const EMAIL_SYSTEM_INSTRUCTION = `
-You are a sales expert masterfully applying the "Exactly What to Say" methodology by Phil M. Jones. 
-Create a 6-touch-point email sequence based on the transcript.
+You are a sales expert writing a 6-touch-point email sequence based on the transcript.
 
-**Core Philosophy (Phil M. Jones):**
+**Core Philosophy:**
 1.  **Remove Friction**: Make it effortless for them to reply.
-2.  **The "No" is Good**: A "no" is as good as a "yes" because it saves time.
-3.  **Magic Words**: Use phrases like "I'm not sure if this is for you...", "Have you given up on...", "Just imagining...", "Quick question".
-4.  **Curiosity, Not Pressure**: Do not "check in". Do not "follow up". Ignite curiosity or ask a simple binary question.
+2.  **Curiosity, Not Pressure**: Do not "check in". Do not "follow up". Ignite curiosity or ask a simple binary question.
+3.  **Mandatory**: Every single email MUST end with a question or a clear call to action.
 
 **Strict Constraints:**
 1.  **NO LINKS**: Do not include URL placeholders or brackets [Link]. The email must be copy-paste ready.
 2.  **NO PLACEHOLDERS**: Do not use [Insert Date] or [Insert Name] unless absolutely necessary.
-3.  **Length**: ${settings.brevity === 'brief' ? 'Ultra short (1-2 sentences max)' : 'Short (3-4 sentences max)'}.
-4.  **Tone**: ${settings.tone === 'casual' ? 'Relaxed, lowercase subject lines ok, start with "Hey"' : 'Professional but human, standard capitalization'}.
-5.  **Directness**: ${settings.directness === 'direct' ? 'Get straight to the point. Bold.' : 'Softer approach, more "I was wondering..."'}.
-6.  **Focus**: ${settings.focus === 'value' ? 'Focus on the specific problem they mentioned (Pain Points).' : 'Focus on the relationship and timing.'}.
-7.  **Urgency**: ${settings.urgency === 'urgent' ? 'Imply a timeline or scarcity.' : 'Patient, "when you are ready" vibe.'}.
-8.  **Emojis**: ${settings.emojis === 'none' ? 'Absolutely NO emojis.' : 'Use 1 tasteful emoji per email max.'}.
+3.  **NO EMOJIS**: Do not use any emojis in the subject or body.
+4.  **Length**: ${settings.brevity === 'brief' ? 'Ultra short (1-2 sentences max)' : 'Short (3-4 sentences max)'}.
+5.  **Tone**: ${settings.tone === 'casual' ? 'Relaxed, lowercase subject lines ok, start with "Hey"' : 'Professional but human, standard capitalization'}.
+6.  **Directness**: ${settings.directness === 'direct' ? 'Get straight to the point. Bold.' : 'Softer approach, more "I was wondering..."'}.
+7.  **Focus**: ${settings.focus === 'value' ? 'Focus on the specific problem they mentioned (Pain Points).' : 'Focus on the relationship and timing.'}.
+8.  **Urgency**: ${settings.urgency === 'urgent' ? 'Imply a timeline or scarcity.' : 'Patient, "when you are ready" vibe.'}.
 
 **Sequence Logic:**
 - Email 1: The Recap (Simple verification of understanding).
 - Email 2: The Resource (Mention a solution to their specific pain point *without* a link, just ask if they want to see it).
-- Email 3: The "Not sure if..." (Soft suggestion).
+- Email 3: The Soft Suggestion (Soft nudge).
 - Email 4: The 9-Word Email (e.g., "Are you still looking to solve [problem]?").
-- Email 5: The "Just imagining" (Future pacing).
+- Email 5: Future Pacing (Imagining the result).
 - Email 6: The Break-up (e.g., "Have you given up on...?").
 
 Output a JSON object with an array of emails.

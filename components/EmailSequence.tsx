@@ -67,9 +67,6 @@ const EmailSequence: React.FC<EmailSequenceProps> = ({ emails }) => {
                   {email.recommendedDate}
                 </p>
               </div>
-              <div className="bg-gray-50 px-2 py-1 rounded text-xs text-gray-500 font-medium max-w-[120px] text-right">
-                {email.reasoning}
-              </div>
             </div>
 
             <div className="space-y-4 flex-grow">

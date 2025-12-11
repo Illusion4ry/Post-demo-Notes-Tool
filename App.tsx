@@ -9,7 +9,6 @@ const DEFAULT_SETTINGS: EmailSettings = {
   tone: 'casual',
   brevity: 'brief',
   directness: 'polite',
-  emojis: 'none',
   focus: 'value',
   urgency: 'patient'
 };
@@ -91,16 +90,6 @@ const App: React.FC = () => {
       </div>
 
       <div className="max-w-[1200px] mx-auto space-y-10">
-        
-        {/* Intro (Only show if no result) */}
-        {!result && (
-          <div className="text-center space-y-3 mb-8 animate-fade-in-up">
-            <h2 className="text-3xl font-semibold tracking-tight">Turn calls into clients</h2>
-            <p className="text-gray-500 text-lg max-w-2xl mx-auto font-light leading-relaxed">
-              Paste your sales call transcript below to extract HubSpot data and generate perfect follow-up emails.
-            </p>
-          </div>
-        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
           
@@ -155,30 +144,34 @@ const App: React.FC = () => {
               <div className="animate-fade-in-up space-y-6">
                 <AnalysisTable data={result} />
                 
-                {/* Email Generation Prompt (Only if no emails yet) */}
-                {!emails && (
-                  <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm text-center space-y-4">
-                    <div className="text-gray-900 font-semibold">Ready to close the deal?</div>
-                    <p className="text-sm text-gray-500">Generate a 6-touch "Exactly What to Say" sequence.</p>
-                    <button
-                      onClick={handleGenerateEmails}
-                      disabled={isGeneratingEmails}
-                      className="w-full py-3 rounded-xl border-2 border-[#0055D4] text-[#0055D4] font-semibold hover:bg-blue-50 transition-colors disabled:opacity-50 flex justify-center items-center gap-2"
-                    >
-                      {isGeneratingEmails ? (
-                         <>
-                         <svg className="animate-spin h-4 w-4 text-[#0055D4]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                         </svg>
-                         <span>Drafting Magic Words...</span>
-                       </>
-                      ) : (
-                        "Generate Email Sequence"
-                      )}
-                    </button>
+                {/* Email Settings and Generation Block */}
+                <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Sequence Settings</h3>
+                    <EmailSettingsPanel 
+                      settings={emailSettings} 
+                      onUpdate={setEmailSettings} 
+                    />
                   </div>
-                )}
+                  
+                  <button
+                    onClick={handleGenerateEmails}
+                    disabled={isGeneratingEmails}
+                    className="w-full py-3 rounded-xl border-2 border-[#0055D4] text-[#0055D4] font-semibold hover:bg-blue-50 transition-colors disabled:opacity-50 flex justify-center items-center gap-2"
+                  >
+                    {isGeneratingEmails ? (
+                       <>
+                       <svg className="animate-spin h-4 w-4 text-[#0055D4]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                       </svg>
+                       <span>{emails ? 'Regenerating...' : 'Drafting Emails...'}</span>
+                     </>
+                    ) : (
+                      <span>{emails ? 'Regenerate Sequence' : 'Generate Email Sequence'}</span>
+                    )}
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="h-full min-h-[500px] flex flex-col items-center justify-center p-12 bg-white/50 rounded-3xl border-2 border-dashed border-gray-200 text-gray-400">
@@ -199,20 +192,6 @@ const App: React.FC = () => {
         {/* Email Sequence Result Section - Full Width below main grid */}
         {emails && (
           <div className="animate-fade-in-up pt-4 pb-20">
-            <div className="flex items-center gap-3 mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Follow-up Sequence</h2>
-              <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full border border-green-200">
-                Phil M. Jones Method
-              </span>
-            </div>
-            
-            <EmailSettingsPanel 
-              settings={emailSettings} 
-              onUpdate={setEmailSettings} 
-              onRegenerate={handleGenerateEmails}
-              isGenerating={isGeneratingEmails}
-            />
-            
             <EmailSequence emails={emails} />
           </div>
         )}
