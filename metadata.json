@@ -1,0 +1,5 @@
+{
+  "name": "Transcript Analyzer",
+  "description": "Extracts structured sales data from call transcripts using AI to generate HubSpot-ready notes.",
+  "requestFramePermissions": []
+}
