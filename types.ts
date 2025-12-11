@@ -27,6 +27,15 @@ export interface EmailSequenceResult {
   emails: EmailDraft[];
 }
 
+export interface EmailSettings {
+  tone: 'casual' | 'formal';
+  brevity: 'brief' | 'standard'; // "Brief" is ultra-short text style
+  directness: 'polite' | 'direct';
+  emojis: 'none' | 'minimal';
+  focus: 'value' | 'relationship';
+  urgency: 'patient' | 'urgent';
+}
+
 export interface RowDefinition {
   label: string;
   key: keyof AnalysisResult;

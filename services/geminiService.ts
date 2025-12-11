@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
-import { AnalysisResult, EmailSequenceResult } from "../types";
+import { AnalysisResult, EmailSequenceResult, EmailSettings } from "../types";
 
 const apiKey = process.env.API_KEY;
 if (!apiKey) {
@@ -86,20 +86,6 @@ You are a sales rep analyzing a call transcript. You are writing these notes FOR
 5.  **Likelihood to close**: Just the score (e.g., "8/10").
 `;
 
-const EMAIL_SYSTEM_INSTRUCTION = `
-You are a sales rep following up with a prospect. Create a 6-touch-point email sequence based on the transcript.
-
-**Crucial Constraints:**
-1.  **Non-Traditional & Human**: Write like a real person, not a marketing bot. Use casual, short sentences.
-2.  **Super Short**: Max 3-4 sentences per email.
-3.  **Fact-Based**: Reference specific facts from the call (e.g., "Since you mentioned X is a bottleneck...").
-4.  **Goal**: Simply inquire if a decision has been made or if they are ready.
-5.  **Resources**: In 1 or 2 emails, include a placeholder link to a TaxDome feature video or resource that solves a specific pain point mentioned. (e.g., "Here's that video on the Client Portal: [Link]").
-6.  **Timing**: Recommend specific dates/times (e.g., "Tuesday Oct 24 at 10am") based on the buying timeline in the transcript.
-
-Output a JSON object with an array of emails.
-`;
-
 export const analyzeTranscript = async (transcript: string): Promise<AnalysisResult> => {
   if (!apiKey) {
     throw new Error("API Key is missing.");
@@ -128,10 +114,41 @@ export const analyzeTranscript = async (transcript: string): Promise<AnalysisRes
   }
 };
 
-export const generateEmailSequence = async (transcript: string): Promise<EmailSequenceResult> => {
+export const generateEmailSequence = async (transcript: string, settings: EmailSettings): Promise<EmailSequenceResult> => {
   if (!apiKey) {
     throw new Error("API Key is missing.");
   }
+
+  const EMAIL_SYSTEM_INSTRUCTION = `
+You are a sales expert masterfully applying the "Exactly What to Say" methodology by Phil M. Jones. 
+Create a 6-touch-point email sequence based on the transcript.
+
+**Core Philosophy (Phil M. Jones):**
+1.  **Remove Friction**: Make it effortless for them to reply.
+2.  **The "No" is Good**: A "no" is as good as a "yes" because it saves time.
+3.  **Magic Words**: Use phrases like "I'm not sure if this is for you...", "Have you given up on...", "Just imagining...", "Quick question".
+4.  **Curiosity, Not Pressure**: Do not "check in". Do not "follow up". Ignite curiosity or ask a simple binary question.
+
+**Strict Constraints:**
+1.  **NO LINKS**: Do not include URL placeholders or brackets [Link]. The email must be copy-paste ready.
+2.  **NO PLACEHOLDERS**: Do not use [Insert Date] or [Insert Name] unless absolutely necessary.
+3.  **Length**: ${settings.brevity === 'brief' ? 'Ultra short (1-2 sentences max)' : 'Short (3-4 sentences max)'}.
+4.  **Tone**: ${settings.tone === 'casual' ? 'Relaxed, lowercase subject lines ok, start with "Hey"' : 'Professional but human, standard capitalization'}.
+5.  **Directness**: ${settings.directness === 'direct' ? 'Get straight to the point. Bold.' : 'Softer approach, more "I was wondering..."'}.
+6.  **Focus**: ${settings.focus === 'value' ? 'Focus on the specific problem they mentioned (Pain Points).' : 'Focus on the relationship and timing.'}.
+7.  **Urgency**: ${settings.urgency === 'urgent' ? 'Imply a timeline or scarcity.' : 'Patient, "when you are ready" vibe.'}.
+8.  **Emojis**: ${settings.emojis === 'none' ? 'Absolutely NO emojis.' : 'Use 1 tasteful emoji per email max.'}.
+
+**Sequence Logic:**
+- Email 1: The Recap (Simple verification of understanding).
+- Email 2: The Resource (Mention a solution to their specific pain point *without* a link, just ask if they want to see it).
+- Email 3: The "Not sure if..." (Soft suggestion).
+- Email 4: The 9-Word Email (e.g., "Are you still looking to solve [problem]?").
+- Email 5: The "Just imagining" (Future pacing).
+- Email 6: The Break-up (e.g., "Have you given up on...?").
+
+Output a JSON object with an array of emails.
+`;
 
   try {
     const response = await ai.models.generateContent({
